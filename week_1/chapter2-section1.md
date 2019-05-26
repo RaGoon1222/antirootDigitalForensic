@@ -152,3 +152,120 @@ NetBios의 이름은 Windows 2000부터 DNS이름과 같도록 설정되어 있�
 이는 상당히 걸림돌이 되는데, 실행할 때 옵션으로 /accepteula를 지정하면 대화상자가 나타나지 않는다.
 
 ### Mac OS X 휘발성 정보 수집
+Mac OS X는 애플사에서 개발한 운영체제이다.  
+이는 Unix기반으로서 리눅스에서도 동일한 방법으로 휘발성 정보를 수집할 수 있다.  
+그리고 지금 이 글을 쓰고 있는 사람은 Mac OS X를 사용하지 않기 때문에 이 책을 기준(10.7.4버전)으로 서술하겠다.  
+1. 시스템 시간  
+[data](https://www.geeksforgeeks.org/date-command-linux-examples/) 명령어를 사용, 해당 시스템이 얼마나 부팅되어 있었는지도 [uptime](https://www.geeksforgeeks.org/linux-uptime-command-with-examples/) 명령어로 알 수 있다.
+2. 네트워크 연결 정보  
+시스템이 연결하고 있는 호스트와 연결했던 호스트 등을 보여준다.  
+시스템이 재시작되면 해당 정보가 사라지므로 휘발성 정보에 속한다.  
+윈도우와 동일하게 [netstat -an](https://www.geeksforgeeks.org/netstat-command-linux/) 명령어로 수집한다.
+3. 프로세스 목록  
+앞서 설명했듯이 __암튼 중요하다__.  
+[ps](https://www.geeksforgeeks.org/ps-command-in-linux-with-examples/) 명령어를 사용하고 보통 -ef옵션을 같이 사용한다.
+4. 사용자 정보  
+Mac OS X는 Unix 기반으로 다중 사용자 시스템으로 여러 사용자들이 동시에 접속하여 어떠한 수행 기능을 할 수 있다. 
+사용되는 명령어는 [w](https://www.geeksforgeeks.org/w-command-in-linux-with-examples/)(who) 명령어이다.  
+또한 원격, 로컬 사용자 정보를 알아보는 명령어로 [finger](https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/com.ibm.aix.cmds2/finger.htm) 명령어가 있으며 -lmsp 옵션을 자주 사용한다.  
+그리고 이전에 접속했던 사용자들의 정보는 [last](https://www.geeksforgeeks.org/last-command-in-linux-with-examples/) 명령어를 통해 수집이 가능하다.
+5. 파일 정보  
+현재 어떤 파일이 어떤 명령으로 인해 열려있고, 어떤 네트워킹 작업을 하고 있는지 수집할 수 있는 명령어로 [lsof](https://www.geeksforgeeks.org/lsof-command-in-linux-with-examples/) 명령어가 있다.  
+자주 사용되는 옵션으로 -i, -P등이 있다. 
+6. 시간 정보  
+다른 OS와 동일하게 MAC(Modify, Access, Create) Time이 존재하고, 여기에 추가적으로 Change Time이 존재한다. 
+    * Modify : 파일의 내용을 수정한 경우(Metadata수정 포함) 갱신
+    * Access : 파일을 읽거나 실행한 경우 갱신 
+    * Create : 파일이 생성된 시간
+    * Change : 파일의 Metadata가 수정된 경우 갱신 ex) chmod  
+    
+    [stat](http://www.tutorialspoint.com/unix_commands/stat.htm) 명령어로 확인하고, 확인할 경우 순서대로 Acces, Modify, Change, Create Time 이 출력된다. 
+7. [Property List](https://ko.wikipedia.org/wiki/%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0_%EB%A6%AC%EC%8A%A4%ED%8A%B8)  
+다른 OS와 다르게 존재하는 것으로 Mac OS X에서 실행되는 어플리케이션 정보들이 저장되는 파일이다.  
+일반 TEXT 프로퍼티 리스트(xml형태)와 실행 파일 프로퍼티 리스트(plutil 명령어로 xml형태로 바꾼다)로 나뉜다.  
+책의 해당 실습은 지금 이 글을 쓰고 있는 사람의 OS에서는 가상머신을 돌리지 않는 한 불가능하기 때문에 넘어가도록 하겠다.  
+
+지금까지 Mac OS X에서 휘발성 정보를 알아보고 수집하는 방법을 배웠다.  
+로그 정보가 더 있지만 너무 방대하기 때문에 따로 언급하지 않았다.
+
+### [라우터(Router)](https://ko.wikipedia.org/wiki/%EB%9D%BC%EC%9A%B0%ED%84%B0) 포렌식 
+라우터는 서로 다른 네트워크망을 연결하는 중요한 네트워크 장비들 중 하나로, 많은 정보를 제공하고 사건을 해결하는 실마리를 제공할 수 있다.  
+그리고 앞으로 CISCO 라우터 장비를 기준으로 해당 파트를 진행하겠다.  
+1. 휘발성 정보  
+    1. 시스템 시간  
+    라우터의 사용자 모드 또는 관리자 모드에서 show clock 명령어로 확인할 수 있다.
+    2. 가동 시간  
+    show version 명령어로 가동 시간 및 라우터의 하드웨어 정보와 소프트웨어 정보를 확인할 수 있다. 
+    3. 로그인 한 사용자  
+    현재 로그인 한 사용자의 목록을 show users 명령어를 통해 확인 가능하다. 
+    4. [ACL](https://ko.wikipedia.org/wiki/%EC%A0%91%EA%B7%BC_%EC%A0%9C%EC%96%B4_%EB%AA%A9%EB%A1%9D) 목록 수집  
+    해당 라우터의 접근이 어떻게 이루어지는지 파악하기 위해 ACL 목록을 파악해야 하는데, show access-lists 명령어로 확인할 수 있다.
+    5. 라우팅 테이블 수집  
+    공격자 추적 및 공격자 접속 경로 확인을 위해 꼭 확인해야한다.  
+    또 공격자가 라우팅 테이블을 통해 패킷 흐름을 바꿀 수도 있어 show ip route 명령어로 확인해야 한다.
+    6. [ARP](https://ko.wikipedia.org/wiki/%EC%A3%BC%EC%86%8C_%EA%B2%B0%EC%A0%95_%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C) 테이블 수집  
+    [스푸핑](https://ko.wikipedia.org/wiki/%EC%8A%A4%ED%91%B8%ED%95%91) 흔적을 파악할 수 있도록 도와준다.  
+    show arp 명령어를 통해 수집할 수 있다. 
+    7. 스택 모니터링 정보  
+    System Crash가 방생하면 라우터가 재부팅되는데, 이 때 재부팅 또는 Crash의 원인을 스택 모니터링의 기능장애 정보를 통해 확인할 수 있다.  
+    show stack 명령어를 사용한다.  
+    8. 여러가지 정보 한꺼번에 얻기  
+    시스코 소프트웨어 11.2 버전 이후부터는 show tech-support 라는 명령어를 지원한다.  
+    해당 명령어는 
+        * show version
+        * show running-config
+        * show stacks
+        * show interface
+        * show controller
+        * show process cpu
+        * show process memory
+        * show buffers  
+
+        등이다.  
+
+    나머지 휘발성 정보는 라우터의 메모리에서 얻을 수 있는데 라우터의 메모리는 일반 컴퓨터를 대상으로 이미징하지 못하기 때문에 TFTP, FTP, RCP, Flash Disk 등을 사용해야한다.  
+    다음으로 메모리 덤프 방법을 알아보기 전 라우터의 메모리 구조에 대해 알아본다. 
+2. 메모리 구조  
+
+    1. DRAM  
+    전원 Off시 데이터가 날아가는 휘발성 메모리이다.  
+    두 가지 타입이 있다.  
+        * primary memory
+        * shared memory  
+    2. EPROM  
+    ROM이라고도 하며 문제가 생겼을 때 사용되는 소프트웨어가 저장되는 (비휘발성)메모리이다.
+    3. NVROM  
+    EPROM과 마찬가지로 비휘발성 메모리로, startup-configuration file이 저장되어 있다. 
+    4. Flash memory  
+    라우터의 IOS 이미지를 저장하고 있다.  
+
+    일반적으로 컴퓨터 메모리와 다를 것이 없으며, 종류가 다양하고, 저장하는 데이터와 사용 타입이 다르다.  
+    이제부터 메모리 덤프의 4가지 방법을 알아본다. 
+
+    1. [TFTP](https://ko.wikipedia.org/wiki/TFTP)  
+    메모리 파일의 크기가 16MB를 초과하면 메모리 덤프 파일이 전송되는 도중 손상을 입을 수도 있다는 제약이 있다.
+        > router# exception dump <TFTP IP>  
+
+        를 수행하면 TFTP 서버에 hostname <라우터 hostname>-core 파일이 생성된다.
+    2. FTP  
+    제약 조건이 없고, 아래와 같은 명령어를 수행하면 FTP서버에 메모리 덤프 파일이 생성된다.  
+    만약에 사용자 ID와 Password를 입력하지 않으면 익명으로 접속하게 된다.  
+        > router# ip ftp username <사용자 ID>  
+        router# ip ftp password <사용자 Password>  
+        router# exception protocol ftp  
+        router# exception dump <FTP IP>
+
+    3. RCP  
+    해당 방법을 사용하기 위해서는 먼저 router configuration에서 해당 기능이 활성화되어있어야 한다.  
+    해당 기능이 보안 문제로 비활성화되기 때문이다.  
+        > router# exception protocol rcp  
+        router# exception dump <RCP IP>
+    
+    4. Flash Disk  
+    해당 방법을 사용하려면 라우터에서 PCMCIA를 지원해야 한다.  
+    partition number의 경우 show flahs all 명령어를 수행하면 알 수 있다.  
+        > router# exception flash <procmem | iomem | all> <partition number> <erase | no_erase>
+
+3. 메모리 분석  
+이 책을 기준으로 라우터의 메모리 분석은 활발하게 연구되지 않아 CIR이라는 도구밖에 없다고 한다.  
+이 도구는 메모리에서 백도어를 분석해 내고, 프로세스, 메모리 예외 처리 등을 분석하여 사용자에게 그 결과를 출력하여 준다.  
