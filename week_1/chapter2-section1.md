@@ -84,4 +84,71 @@ Live Response에서 사용할 도구는 이러한 경우들을 고려하여 성�
 프로세스 분석은 [tasklist](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/tasklist)명령어와 [Pslist도구](https://docs.microsoft.com/en-us/sysinternals/downloads/pslist)로 프로세스를 볼 수 있다.  
 ![pslist](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/pslist.PNG?raw=true)  
 다음 스크린샷은 -t 옵션을 사용하여 부모 프로세스와 자식 프로세스의 관계를 직관적으로 파악할 수 있도록 하였다.  
-또 다른 도구로는 Process Monitor, Process Explorer가 있다.
+GUI 도구로는 Process Monitor, Process Explorer가 있다.  
+GUI는 CLI보다 영향을 많이 주지만 프로세스의 전체 경로와 DLL, TCP 동작 등의 여러 가지 정보를 제공한다.  
+4. [핸들](https://ko.wikipedia.org/wiki/%ED%95%B8%EB%93%A4_(%EC%BB%B4%ED%93%A8%ED%8C%85)) 정보  
+도구로는 주로 Handle.exe를 사용한다.
+5. DLL 목록  
+만약 [DLL Injection](https://ko.wikipedia.org/wiki/DLL_%EC%9D%B8%EC%A0%9D%EC%85%98)으로 인해 사고가 난 것이라면 프로세스 목록으로만 분석이 어렵기 때문에 DLL 목록을 불러와 분석을 해야한다.  
+DLL 목록은 [ListDlls.exe도구](https://docs.microsoft.com/en-us/sysinternals/downloads/listdlls)를 사용해 쉽게 얻을 수 있다.
+5. 로그온(=로그인) 사용자 정보  
+로그온 사용자 정보를 수집하는데 필요한 명령어는 [net session](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh750729(v%3Dws.11))이라는 명령어와 도구로서는 [Psloggedon](https://docs.microsoft.com/en-us/sysinternals/downloads/psloggedon)(앞서 설치한 PSTools폴더 안에 포함되어 있다), [Logonsession](https://docs.microsoft.com/en-us/sysinternals/downloads/logonsessions) 이라는 도구가 있다.  
+net session 명령어는 원격에서 로그온 한 사용자의 정보를 알려주고, psloggedon과 Logonsession 도구는 로컬과 원격 로그온 사용자의 정보를 보여준다.  
+자세한 정도는 Logonsession도구가 프로세스 목록(Logonsession도구의 /p옵션을 사용할 경우 프로세스 목록을 볼 수 있다)까지 보여주기 때문에 앞선다.
+7. 파일 핸들  
+[net file](https://sourcedaddy.com/networking/the-net-file-command.html) 명령어와 Psfile도구가 있다.  
+다음은 net file명령어를 실행하여 현재 열어둔 파일이 없다는 것을 보여준다.
+![netFile](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/netFile.PNG?raw=true)
+8. [Open 포트](https://en.wikipedia.org/wiki/Open_port)와 *프로세스 맵핑*(???) 정보  
+해당 정보를 수집하고 분석하면 어떠한 프로세스가 어떤 포트로 들어가 어떤 서버와 연결하여 어떤 작업을 하는지 파악할 수 있다.  
+[netstat -b](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/netstat#syntax) 명령어로 확인할 수 있다.  
+하지만 프로세스의 전체 경로를 제공하지는 않는다.
+9. 히스토리  
+명령 프롬프트를 닫지 않을 경우 [doskey/history](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/doskey) 명령어를 통해 명령 프롬프트에서 어떠한 명령어를 사용하였는지 알 수 있다.
+10. 윈도우 서비스 정보  
+해당 정보를 수집, 분석하면 어떤 악성 프로그램이 서비스에 몰래 등록되어 사용되는지 판단할 수 있다.  
+이러한 서비스 목록을 얻기 위해서는 [Psservice](https://docs.microsoft.com/en-us/sysinternals/downloads/psservice)라는 도구를 사용하면 된다.
+해당 책에서는 다음과 같이 Psservice.exe : more 명령어를 사용했다.
+![Psservice](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/Psservice.PNG?raw=true)
+종종 서비스의 설명이 없는 경우가 있는데 그 서비스는 악성일 수도 있고 아닐 수도 있다. 그렇다고 서비스 설명이 있다고 꼭 악성 프로그램 서비스가 아니라고 할 수도 없다.
+11. 시작 프로그램 목록 정보  
+해당 정보는 OS에 의해 자동으로 실행되는 정보이다.  
+[autorunsc](https://docs.microsoft.com/en-us/sysinternals/downloads/autoruns) 도구로 얻을 수 있다.
+12. [라우팅 테이블](https://ko.wikipedia.org/wiki/%EB%9D%BC%EC%9A%B0%ED%8C%85_%ED%85%8C%EC%9D%B4%EB%B8%94) 정보 / *네트워크 인터페이스*(???) 정보  
+라우팅 테이블은 개인 PC에도 존재한다.  
+이 정보는 네트워크 데이터 흐름을 조절할 수 있다.  
+게이트웨이 등이 내부 개인 PC로 설정되어 있으면 중계 컴퓨터를 의심해 봐야 한다.  
+해당 정보 수집 방법으로는 [netstat -r](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/netstat#syntax)가 있다.  
+네트워크 인터페이스 정보를 분석해야 하는 이유는 [MAC](https://ko.wikipedia.org/wiki/MAC_%EC%A3%BC%EC%86%8C) 변조 유무를 파악하기 위해서이다.  
+네트워크 인터페이스 정보를 얻으려면 [ipconfig /all](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/ipconfig#syntax)명령어를 사용한다.  
+만약 [promiscuous mode](https://en.wikipedia.org/wiki/Promiscuous_mode) 유무를 파악하고 싶으면 PromiscDetect 도구를 사용한다. 
+13. 클립보드 정보  
+복붙 정보다.  
+Windows XP이후의 윈도우에서는 별도의 도구를 사용해야 한다.
+14. 네트워크 공유 폴더 정보  
+해당 정보의 수집은 [net use](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/gg651155(v%3Dws.11)) 명령어를 사용하면 된다.  
+[net share](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh750728(v%3dws.11)) 명령어와 다른 점은 net use는 원격 컴퓨터의 공유 폴더 목록을 확인할 수 있고, net share 명령어는 로컬 컴퓨터의 공유 폴더 목록을 확인할 수 있다는 점이다.
+15. NetBios 정보  
+NetBios는 데이터 교환으로 TCP/IP 프로토콜을 사용한다.  
+그러므로 NetBios를 통해 데이터를 교환할 경우 상대방의 IP와 NetBios 이름을 테이블 형태로 저장하며, 이것을 'Cached NetBios Name Table'이라고 부른다.  
+이 정보는 600초 동안 유지되며 [nbtstat -c](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/nbtstat) 명령어를 통해 수집한다.  
+NetBios의 이름은 Windows 2000부터 DNS이름과 같도록 설정되어 있으므로 구별법을 알아야 한다.  
+구별하는 방법으로는  
+    * DNS 이름은 255자인 반면, NetBios는 16자이다.
+    * NetBios는 이름 뒤에 <16진수>의 접미사가 붙는다.  
+    ex) NetBios<0F>  
+
+    다음은 NetBios 접미사 목록이다. 
+    ![netbios1](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/NetBios1.PNG?raw=true)
+    ![netbios2](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/NetBios2.PNG?raw=true)
+    
+16. 프로세스 메모리  
+프로세스는 소스 코드와 DLL파일, 실행 전체 경로 등을 가상 메모리에 업로드하여 동작한다. 이때 프로세스가 사용하는 가상 메모리를 덤프하는 __프로세스 덤프(컴퓨터 프로그램이 특정 시점에 작업 중이던 메모리 상태를 기록한 것)__ 를 분석함으로써 좀 더 정확하고 중요한 정보를 알 수 있다.  
+덤프 방법으로는 [userdump.exe](https://www.microsoft.com/en-us/download/details.aspx?id=4060) 도구를 사용한다.  
+
+프로세스 메모리를 끝으로 윈도우 휘발성 정보들에 대해 알아보았다.  
+이 많은 휘발성 정보들을 자동으로 수집할 수 있는 자신만의 프로그램이나 스크립트([배치파일](https://ko.wikipedia.org/wiki/%EB%B0%B0%EC%B9%98_%ED%8C%8C%EC%9D%BC), 스크립트 언어 등으로)를 만들어 포렌식 업무에 적용하면 더욱 효율적으로 수행할 수 있다.  
+또한 수집한 대부분의 도구들이 EULA 확인 대화상자가 뜬다.  
+이는 상당히 걸림돌이 되는데, 실행할 때 옵션으로 /accepteula를 지정하면 대화상자가 나타나지 않는다.
+
+### Mac OS X 휘발성 정보 수집
