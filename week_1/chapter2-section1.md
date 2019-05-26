@@ -79,4 +79,9 @@ Live Response에서 사용할 도구는 이러한 경우들을 고려하여 성�
 [date](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/date)와 [time](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/time)명령어로 수집 가능하다.  
 윈도우 하단의 트레이 패널로 시간을 조작하면 레지스트리에 기록이 남지만 명령어로 조작할 경우 레지스트리에 기록이 남지 않는다.
 2. 네트워크 연결 정보  
-netstat 명령어로 수집할 수 있고, 
+[netstat](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/netstat) 명령어로 수집할 수 있다.
+3. 프로세스 목록  
+프로세스 분석은 [tasklist](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/tasklist)명령어와 [Pslist도구](https://docs.microsoft.com/en-us/sysinternals/downloads/pslist)로 프로세스를 볼 수 있다.  
+![pslist](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/pslist.PNG?raw=true)  
+다음 스크린샷은 -t 옵션을 사용하여 부모 프로세스와 자식 프로세스의 관계를 직관적으로 파악할 수 있도록 하였다.  
+또 다른 도구로는 Process Monitor, Process Explorer가 있다.
