@@ -65,7 +65,7 @@ Live Response에서 사용할 도구는 이러한 경우들을 고려하여 성�
 800- 86)](https://www.nist.gov/publications/guide-integrating-forensic-techniques-incident-response)
 
 두 문서의 구성 순서이다.
-![table 2.1](week_1/img/table2-1.png)
+![table 2.1](week_1/img/table2-1.PNG)
 
 휘발성 정보 수집을 위해서는 도구 사용이 필요한데, 도구 사용을 위해서는 관리자 권한 획득이 꼭 필요하다.  
 관리자 권한을 획득하기 위해서는 여러 가지 방법이 있는데, 가장 쉬운 방법은 사용자 로그오프 후 관리자 로그인을 하는 것이다.  
@@ -79,3 +79,4 @@ Live Response에서 사용할 도구는 이러한 경우들을 고려하여 성�
 [date](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/date)와 [time](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/time)명령어로 수집 가능하다.  
 윈도우 하단의 트레이 패널로 시간을 조작하면 레지스트리에 기록이 남지만 명령어로 조작할 경우 레지스트리에 기록이 남지 않는다.
 2. 네트워크 연결 정보  
+netstat 명령어로 수집할 수 있고, 
