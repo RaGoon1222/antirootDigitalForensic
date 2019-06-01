@@ -282,3 +282,28 @@ PEB에 저장되는 데이터는 사용자 모드로 접근하는 이미지 로�
 그렇기에 커널 영역에 있으면 접근이 어려우므로 사용자 영역에 저장하는 것이다.  
 [그림 2.68]은 PEB 구조체의 정보이다.
 ![XPSP2PEB](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/PEB.PNG?raw=true)
+
+#### ActiveProcessLink  
+ActiveProcessLink는 원형 이중 링크드 리스트로 이루어져 있으며, 이 항목을 통해 프로세스의 목록을 얻을 수도 있다.  
+이중 링크드 리스트는 간단히 표현하면 [그림 2.69]와 같이 나타낼 수 있다.  
+![이중링크드리스트](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/DoubleLinkedList.PNG?raw=true)  
+원형 이중 링크드 리스트는 이중 링크드 리스트에 PsActiveProcessLink라는 커널 전역변수를 추가해 순환 구조를 만들어 준 것이다.  
+![원형이중링크드리스트](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/DoublyCircularLinkedList.PNG?raw=true)  
+그림을 한눈에 봐서는 이해가 안 될 수 있다.  
+그러므로 화살표를 유의하며 보길 바란다.  
+PsactiveProcessLink 변수에 대해 좀 더 설명하자면, 이 변수는 ActiveProcessLink(작업관리자의 System 프로세스는 윈도우 커널을 의미하며, 언제나 ActiveProcessLink의 첫번째 프로세스이다.)와 같은 구조로 되어 있고, 이 변수에 접근하기 위해 커널 프로세스의 권한이 필요하다.  
+
+#### DKOM(Direct Kernel Object Manipulation  
+DKOM 기법은 커널 오브젝트(EPROCESS)를 수정하여 프로세스를 숨기는 방법으로, 정상적인 프로세스 원형 이중 연결 리스트에서 숨기고자 하는 프로세스를 연결 리스트에서 빼내는 것이다.  
+이렇게 하면 일반적으로 ActiveProcessLink를 참조하여 프로세스 목록을 얻는 도구들은 숨겨진 프로세스를 찾을 수 없다.  
+일반적인 프로세스 순환 구조라면 [그림 2.70]이 되겠지만, 해커나 악의적인 루트킷에 의해 프로세스가 숨겨졌다면 [그림 2.71]과 같은 구조가 된다.  
+![ListAfterRootKit](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/ProcessAfterRootKit.PNG?raw=true)  
+숨겨진 프로세스는 자신을 가리키도록 만드는데 이렇게 하는 이유는 숨겨진 프로세스에 의해 BSOD가 일어나지 않게 하기 위해서이다.  
+커널이 프로세스를 관리하기 위해 참조하는 ActiveProcessLink에서 제외되면 커널의 관리를 받지 못하므로 프로세스가 종료되거나 해야하는데 종료되지 않는 이유는 무엇일까?  
+
+숨겨진 해당 프로세스가 점유하고 있는 자원이 회수되지 않고 메모리에 그대로 남기 때문에 프로세스는 생존할 수 있다.  
+또한 윈도우는 프로세스 단위가 아닌 스레드 단위로 처리 기준을 정해놨기 때문에 프로세스가 종료되더라도 스레드만 살아있으면 얼마든지 어떠한 행위의 동작이 가능하다.  
+이제는 이러한 지식을 바탕으로 메모리 덤프파일에서 프로세스를 찾는 방법을 알아보도록 한다.  
+프로세스를 찾는 방법은 리스트 워킹 방법과, 패턴 매칭 방법이 있다.  
+
+#### 커널 오브젝트 검색 방법
