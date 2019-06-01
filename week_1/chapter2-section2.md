@@ -208,3 +208,77 @@ Win7의 경우 크래시 덤프 파일을 생성할 때 조건으로 여유 디�
 가상 주소의 구조는 다음과 같다.  
 
 >가상 주소 = 페이지 디렉토리 인덱스(10bit) + 페이지 테이블 인덱스(10bit) + 바이트주소 인덱스(12bit) = 32bit
+
+이와 같은 정보를 이용하여 OS는 가상 주소를 토대로 물리적 주소를 찾을 수 있다.  
+방법은 다음과 같다.  
+
+1. [페이지 디렉토리의 엔트리](https://0x200.tistory.com/entry/8-%ED%8E%98%EC%9D%B4%EC%A7%95-2-%E2%80%93-%ED%8E%98%EC%9D%B4%EC%A7%95)에 저장된 페이지 테이블 주소를 읽고 해당 주소에 있는 페이지 테이블로 이동한다.  
+그 후 가상 주소에 존재하는 페이지 테이블 인덱스 값으로 해당 페이지 테이블에서 해당하는 인덱스를 찾아 그 값을 읽는다.  
+페이지 테이블 엔트리에는 물리적 주소의 페이지 프레임 주소가 들어있다.(페이지 프레임으로 이동)  
+2. 가상 주소의 페이지 디렉토리 인덱스 값에서 현재 프로세스의 페이지 디렉토리의 엔트리를 찾고 그 값을 읽는다.  
+페이지 디렉토리 엔트리에는 페이지 테이블의 주소 정보가 들어 있다.(페이지 테이블로 이동)  
+3. 페이지 디렉토리의 엔트리에 저장된 페이지 테이블 인덱스 값으로 페이지 테이블 엔트리를 찾아 그 값을 읽는다.  
+페이지 테이블 엔트리에는 물리적 주소의 페이지 프레임 주소가 들어있다.(페이지 프레임으로 이동)
+4. 가상 주소의 마지막 부분에 있는 바이트주소 인덱스를 이용해서 실제 찾고자 하는 물리적 메모리의 주소로 이동하고 필요한 만큼 데이터를 읽는다.  
+
+위의 설명을 그림으로 표현하면 [그림 2.65]와 같다.  
+
+![RoadMapUsingVirtualAddress](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/RoadMapUsingVirtualAddress.PNG?raw=true)
+프로세스마다 페이지 디렉토리를 가지고 있으며 이것의 물리적 주소는 [KPROCESS](http://blog.naver.com/PostView.nhn?blogId=s2kiess&logNo=30180931485) 구조체 안에 저장되어 있다가 [Context Switching](https://ko.wikipedia.org/wiki/%EB%AC%B8%EB%A7%A5_%EA%B5%90%ED%99%98)이 발생하면 [CR3 레지스터](https://en.wikipedia.org/wiki/Control_register#CR3)로 복사된다.  
+실제 프로세스 오브젝트는 가상 메모리에서 보이는 것과 달리 물리적 메모리에 단편화 되어 저장되는데, 흩어져 있는 프로세스 데이터를 가상 주소를 근거로 찾으려면 반드시 페이지 디렉토리의 물리적 주소가 필요하다. KPROCESS 구조 안에 페이지 디렉토리의 물리적 주소가 아닌 가상 주소가 저장되어 있다면 가상 주소와 물리적 주소의 맵핑은 불가능하다.  
+
+이것을 처음 이해하기는 조금 힘이 들 것이다.  
+또하 [그림 2.65]의 과정을 이해하는 것도 처음에는 어렵겠지만 순서를 읽고 그림의 화살표를 따라가다 보면 이해에 조금 도움이 될 것이다.  
+
+### [프로세스](https://ko.wikipedia.org/wiki/%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4)  
+메모리 분석에서 제일 중요한 것은 프로세스를 찾는 것이다.  
+특히 루트킷에 의해 숨겨진 프로세스를 찾는 것은 안티루트킷 도구들과 메모리 분석으로 할 수 있는데, 안티루트킷 도구를 사용하면 조사환경에 어떤 영향을 주는지 몰라 메모리 분석보다 좋지 못한 방법이라고 할 수 있다.(무조건적으로는 아니다)
+
+메모리에서 프로세스를 찾기 전, 프로세스의 정보 저장과 관리방법에 대해 공부를 해야 한다.  
+그러므로 이번에는 윈도우에서 프로세스를 어떻게 관리하고 다루는지 알아 볼 것이다.  
+또한 프로세스를 숨기는 방법 중 가장 대표적인 [DKOM](https://ko.wikipedia.org/wiki/%EC%A7%81%EC%A0%91_%EC%BB%A4%EB%84%90_%EA%B0%9D%EC%B2%B4_%EC%A1%B0%EC%9E%91)의 원리도 공부 해 볼 것이다.  
+
+윈도우에선 [EPROCESS](http://blog.naver.com/PostView.nhn?blogId=s2kiess&logNo=30180931485)라는 구조체에 프로세스의 모든 정보가 들어가 있다.  
+[그림 2.66]은 [windbg](https://docs.microsoft.com/ko-kr/windows-hardware/drivers/debugger/getting-started-with-windbg--kernel-mode-) 커널 디버깅 모드로 본 XP SP2의 EPROCESS 구조체 정보이다.  
+
+![EPROCESS](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/EPROCESS.PNG?raw=true)
+
+[그림 2.66]을 제외하고도 많은 정보들이 더 나왔지만 글이 불필요하게 길어지는 것을 방지하고자 [그림 2.66]만 첨부하였다.  
+직관적인 이름의 항목들이 많이 보이고, 프로그래밍을 해본 사람이라면 이해할 데이터 타입들도 눈에 띈다.  
+하지만 포렌식 관점에서 중요한 부분은 몇 개 되지 않는다.  
+왜냐하면 포렌식 관점에서는 다음과 같은 필드들을 주로 보기 때문이다.  
+
+1. [PCB(Process Control Block)](https://ko.wikipedia.org/wiki/%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4_%EC%A0%9C%EC%96%B4_%EB%B8%94%EB%A1%9D)  
+DISPATCHER_HEADER, 디렉토리 테이블 주소, KTHREAD 목록, 우선순위, 커널/유저 CPU 시간 등에 대한 정보를 가진다.  
+2. CreateTime  
+프로세스가 시작된 시간 정보이며, 64bit 윈도우 시간 형식을 지닌다.  
+3. ExitTime  
+프로세스가 종료된 시간 정보이며, 또한 64bit 윈도우 시간 형식을 지닌다.  
+4. UniqueProcessID  
+프로세스의 ID값이다.  
+5. ActiveProcessLinks  
+ActiveProcess List를 구성하는 이중 연결리스트이다. 
+6. ObjectTable  
+오브젝트 핸들 테이블의 위치를 가리키는 포인터 값이다.  
+7. WorkingSet(어떠한 특수 프로세스 전용으로 할당된 물리적 메모리 페이지의 그룹) Page  
+프로세스의 WorkingSetPage이다.  
+8. PEB(Process Environment Block)  
+프로세스 실행에 필요한 정보를 담고 있으며, BaseAddress, Module List, Heap/Stack 정보가 들어있다.  
+
+만약 메모리 덤프파일에서 프로세스를 찾는다면 PCB와 ActiveProcessLinks 항목을 주로 이용할 것이며, 프로세스 정보를 찾는다면 나머지 필드들과 PEB 항목을 주로 이용할 것이다.  
+EPROCESS의 PCB 항목 데이터 타입을 보면 KPROCESS는 EPROCESS의 하부 구조체로써 프로세스의 스케줄링 관련 정보를 저장하고 있다.  
+KPROCESS의 하부 구조체 중 DISPATCHER_HEADER라는 하부 구조체는 프로세스들 사이의 동기화에 필요한 구조체로써 메모리 덤프에서 오브젝트를 찾을 때 중요한 역할을 한다.  
+
+커널 영역에 있는 또 다른 구조체인 ETHREAD, KTHREAD는 위의 구조체와 구조는 같으나 다루는 대상이 스레드라는 점에서 차이가 있다.  
+[그림 2.67]은 KPROCESS 구조체의 정보를 windbg 커널 디버깅 모드로 확인한 이미지이다.  
+
+![KPROCESS](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/KPROCESS.PNG?raw=true)
+
+#### PEB  
+PEB는 EPROCESS의 하부 구조체 중 하나로써, 프로세스의 환경설정 값을 가진다.  
+하지만 값을 직접 가지지 않고 사용자 영역의 PEB에 대한 포인터 값을 가진다.  
+커널 영역에 속하는 PEB를 사용자 영역에 하나 더 두고 그것의 포인터 값을 가지는지는 아래와 같이 설명할 수 있다.  
+PEB에 저장되는 데이터는 사용자 모드로 접근하는 이미지 로더, 힙 매니저, 윈도우 시스템 DLL 파일이 필요로 하는 정보이기 때문이다.  
+그렇기에 커널 영역에 있으면 접근이 어려우므로 사용자 영역에 저장하는 것이다.  
+[그림 2.68]은 PEB 구조체의 정보이다.
+![XPSP2PEB](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/XPSP2Peb.PNG?raw=true)
