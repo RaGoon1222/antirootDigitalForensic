@@ -281,4 +281,4 @@ PEB는 EPROCESS의 하부 구조체 중 하나로써, 프로세스의 환경설�
 PEB에 저장되는 데이터는 사용자 모드로 접근하는 이미지 로더, 힙 매니저, 윈도우 시스템 DLL 파일이 필요로 하는 정보이기 때문이다.  
 그렇기에 커널 영역에 있으면 접근이 어려우므로 사용자 영역에 저장하는 것이다.  
 [그림 2.68]은 PEB 구조체의 정보이다.
-![XPSP2PEB](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/XPSP2Peb.PNG?raw=true)
+![XPSP2PEB](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/PEB.PNG?raw=true)
