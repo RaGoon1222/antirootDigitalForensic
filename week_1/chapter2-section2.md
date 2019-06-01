@@ -353,3 +353,55 @@ connections, connscan 옵션을 사용하면 정보를 얻을 수 있다.
 실제로 몇몇 외국 전문가들은 해당 도구의 플러그인을 만들어 추가 후 사용하고 있기도 하고, 국내에서는 해당 도구의 플러그인을 이용해 간단한 스크립트를 만들어 작업을 자동화하기도 한다.  
 
 #### Redline
+이 도구는 Memoryze 도구의 업그레이드 버전으로 GUI를 사용한다.  
+[.NET 프레임워크](https://ko.wikipedia.org/wiki/%EB%8B%B7%EB%84%B7_%ED%94%84%EB%A0%88%EC%9E%84%EC%9B%8C%ED%81%AC)를 기반으로 제작되었으며, [포터블](https://ko.wikipedia.org/wiki/%ED%9C%B4%EB%8C%80%EC%9A%A9_%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4) 형식으로 폴더만 외장장치로 복사하여 다른 시스템에서 사용할 수 있는 장점이 있다.  
+하지만 지원하지 못하는 이미지 버전 등이 있어 아직 모든 시스템에 적용할 수 있는 것은 아니며, 구동하려는 시스템에 .NET 프레임워크가 설치되어 있지 않다면 실행되지 않는다.(Windows 7에서는 기본적으로 설치된다.)  
+
+이 도구는 네 가지(Quick, Standard, Full, Custom)분석 모드를 지원하고 있고, MRI core 리포트부터 다양한 리포트를 보여준다.  
+프로세스 목록은 물론 핸들, 실행 명령어, 네트워크 연결정보, 후킹, 드라이버 목록 등의 정보를 보여준다.  
+해당 도구는 무료 소프트웨어니 각자 테스트해 보는 것을 추천한다.  
+
+![Redline](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/Redline.PNG?raw=true)
+
+#### 메모리 분석 예제 
+
+이제 포렌식에 필요한 메모리 지식과 도구에 대해 알아보았으니 이를 응용해보는 시간을 가지자.  
+이번 절의 목적은 어떤 메모리 덤프 파일에서 유효한 데이터를 찾는 것이다.  
+해당 예제는 어떤 시스템의 메모리 덤프 파일이 있다는 가정하에 진행된다.  
+먼저 메모리 덤프 파일을 Volatility 도구나 Redline과 같은 분석 도구로 스캔하여 메모리 덤프 당시 어떤 프로세스들이 있었는지 확인해 보자.  
+
+![memory1](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/memoryAnalysis1.PNG?raw=true)  
+
+프로세스 목록을 보면 OS가 사용하는 프로세스도 보이고 사용자가 사용한 것으로 추측되는 인터넷 브라우저 프로세스도 보인다.  
+유효한 데이터가 있어 보이는 프로세스이므로 [그림 2.79]와 같이 메모리 덤프 파일에서 해당 프로세스들의 메모리 영역을 덤프하여 분석 준비를 한다.  
+
+![memory2](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/memoryAnalysis2.PNG?raw=true)
+
+덤프된 파일들은 Raw상태이므로 String과 같은 도구로 문자열만 검색해 해당 프로세스에 어떤 데이터가 있는지 보아야 한다.  
+어떤 데이터가 있는지 모르기 때문에 http 프로토콜을 검색해 어떤 페이지에 접근하였는지 알아보자.  
+
+![memory3](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/memoryAnalysis3.PNG?raw=true)
+
+검색 결과를 보면 그 양이 너무 방대하고 불필요한 데이터가 많아 분석에 방해가 된다.  
+이럴 땐 조금 더 세부적인 검색을 시도해야 하는데 필자는 임의대로 SNS 데이터부터 검색해 보았다.  
+검색 결과, facebook에 로그인을 시도한 흔적을 찾았다.  
+
+![memory4](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/memoryAnalysis4.PNG?raw=true)  
+
+이를 토대로 다시 한번 facebook 문자열을 프로세스 메모리 덤프 파일에서 검색하여 결과를 추려 분석을 시도한다.  
+
+![memory5](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/memoryAnalysis5.PNG?raw=true)  
+
+결과를 분석하여 보면 [그림 2.82]와 같이 facebook에 로그인 실패한 흔적이 보인다.  
+흔적에는 사용자 ID로 추정되는 saiwnsgud%40naver.com이 보인다.  
+이를 토대로 다시 한번 프로세스 메모리 영역을 검색하여 결과를 추리면 [그림 2.83]과 같은 결과가 나온다.  
+
+![memory6](https://github.com/RaGoon1222/antirootDigitalForensic/blob/master/week_1/img/memoryAnalysis6.PNG?raw=true)  
+
+[그림 2.83]을 보면 facebook에 로그인한 흔적이 보이며 그 흔적에는 ID(email_or_phone=saiwnsgud%40naver.com)와 Password(pass=p%40ssw0rd)가 보인다.  
+
+이렇듯 메모리에서는 유효한 데이터를 얼마든지 찾을 수 있다.  
+더군다나 facebook이나 다른 웹 사이트들은 [SSL(Secure Socket Layer)](https://ko.wikipedia.org/wiki/%EC%A0%84%EC%86%A1_%EA%B3%84%EC%B8%B5_%EB%B3%B4%EC%95%88)을 사용하는 곳이 많다.  
+하지만 메모리에서는 암호화가 되지 않은 채로 [그림 2.83]처럼 저장되어 충분히 유효한 데이터를 찾을 수 있다.  
+이런 이유로 침해사고가 발생했을 시 휘발성 정보 수집도 중요하지만 메모리의 덤프 파일을 획득하는 것도 중요하다.  
+메모리 덤프를 수행하였을 때 데이터가 얼마나 남아있는가에 따라 얻을 수 있는 데이터의 양이 달라지기 때문이다.
